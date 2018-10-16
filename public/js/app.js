@@ -1,4 +1,7 @@
 var graph = null;
+var ledWidth = 16;
+var ledHeight = 32;
+var LedDepth = 8;
 
 window.addEventListener('load', ()=>{
     
@@ -35,23 +38,25 @@ function drawVisualization() {
         showPerspective: false,
         showGrid: true,
         keepAspectRatio: true,
-        verticalRatio: 0.25,
+        verticalRatio: 2,
         showLegend: false,
         onclick: onclick,
-        dotSizeRatio: 0.01,
-        xMax: 15,
+        dotSizeRatio: 0.015,
+        // x->x, y<->z
+        xMax: ledWidth,
         xMin: 0,
-        yMax: 31,
-        yMin: 0,
-        zMax: 7,
-        zMin: 0,
         xStep: 2,
+        yMax: LedDepth,
+        yMin: 0,
         yStep: 2,
+        zMax: ledHeight,
+        zMin: 0,
         zStep: 2,
+        zValueLabel: function (z) { return ledHeight-z},
         cameraPosition: {
             horizontal: -0.35,
             vertical: 0.22,
-            distance: 1.8
+            distance: 3.0
         }
     };
 
@@ -65,12 +70,12 @@ function getInitialData() {
     data = new vis.DataSet();
     var random = Math.random;
 
-    for (var x = 0; x < 16; x++) {
-        for (var y = 0; y < 32; y++) {
-            for (var z = 0; z < 8; z++) {
+    for (var x = 0; x < ledWidth; x++) {
+        for (var y = 0; y < ledHeight; y++) {
+            for (var z = 0; z < LedDepth; z++) {
                 var show = Math.round(random() * 0x100000)
                 if (show % 30 == 0) {
-                    data.add({ x: x, y: y, z: z, style: 0xff0000 });
+                    data.add({ x: x, y: z, z: ledHeight-y, style: 0xff0000 });
                 }
             }
         }
@@ -86,7 +91,7 @@ function ConvertToVisData(ledData){
                 var idx = z + y * 8 + x * 8 * 32;
                 if (ledData[idx]){
                     c = zeroPadding(ledData[idx].toString(16),6)
-                    data.add({ x: x, y: y, z: z, style: "#"+c });
+                    data.add({ x: x, y: z, z: ledHeight-y, style: "#"+c });
                 }
 
             }

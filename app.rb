@@ -4,7 +4,6 @@ require 'socket'
 require 'timeout'
 require 'sinatra'
 require 'sinatra-websocket'
-require 'sinatra/reloader' if development?
 
 set :server, 'thin'
 set :sockets, []

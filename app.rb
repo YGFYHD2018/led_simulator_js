@@ -8,7 +8,7 @@ require 'sinatra-websocket'
 set :server, 'thin'
 set :sockets, []
 
-g_data = Array.new(16 * 8 * 32)
+$g_data = Array.new(16 * 8 * 32)
 
 get '/' do
   send_file File.join(settings.public_folder, 'index.html')
@@ -16,7 +16,7 @@ end
 
 get '/api/led' do
   content_type :json
-  g_data.to_json
+  $g_data.to_json
 end
 
 get '/websocket' do
@@ -41,9 +41,22 @@ def rgb565to888(c565)
   (r << 16) + (g << 8) + b
 end
 
+def update_g_data(data)
+  (0...8).each do |z|
+    (0...32).each do |y|
+      (0...16).each do |x|
+        idx565 = (z + y * 8 + x * 32 * 8) * 2
+        idx888 = (z + y * 8 + x * 32 * 8)
+        c565 = (data[idx565].unpack('C*')[0] << 8) + data[idx565 + 1].unpack('C*')[0]
+        $g_data[idx888] = rgb565to888(c565)
+      end
+    end
+  end
+end
+
 Thread.abort_on_exception = true
 
-thr = Thread.new do
+Thread.new do
   UDPSocket.open do |recv_sock|
     recv_sock.bind('0.0.0.0', 9001)
     update_time = Time.now
@@ -52,19 +65,8 @@ thr = Thread.new do
       current_time = Time.now
       next unless current_time - update_time > 0.05
       update_time = current_time
-      (0...8).each do |z|
-        (0...32).each do |y|
-          (0...16).each do |x|
-            idx565 = (z + y * 8 + x * 32 * 8) * 2
-            idx888 = (z + y * 8 + x * 32 * 8)
-            c565 = (data[idx565].unpack('C*')[0] << 8) + data[idx565 + 1].unpack('C*')[0]
-            g_data[idx888] = rgb565to888(c565)
-          end
-        end
-      end
-      settings.sockets.each do |s|
-        s.send(g_data.to_json)
-      end
+      update_g_data(data)
+      settings.sockets.each { |s| s.send($g_data.to_json) }
     end
   end
 end

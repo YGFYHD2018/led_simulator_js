@@ -41,8 +41,7 @@ def rgb565to888(c565)
   (r << 16) + (g << 8) + b
 end
 
-def convert(src)
-  dst = Array.new(16 * 8 * 32)
+def convert(src, dst)
   (0...8).each do |z|
     (0...32).each do |y|
       (0...16).each do |x|
@@ -53,7 +52,6 @@ def convert(src)
       end
     end
   end
-  dst
 end
 
 Thread.abort_on_exception = true
@@ -67,7 +65,7 @@ Thread.new do
       current_time = Time.now
       next unless current_time - update_time > 0.05
       update_time = current_time
-      g_data = convert(data)
+      convert(data, g_data)
       settings.sockets.each { |s| s.send(g_data.to_json) }
     end
   end

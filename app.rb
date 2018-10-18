@@ -7,6 +7,7 @@ require 'sinatra-websocket'
 
 set :server, 'thin'
 set :sockets, []
+set :bind, '0.0.0.0'
 
 g_data = Array.new(16 * 8 * 32)
 

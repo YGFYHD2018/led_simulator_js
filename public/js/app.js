@@ -76,6 +76,7 @@ function getInitialData() {
                 var show = Math.round(random() * 0x100000)
                 if (show % 30 == 0) {
                     data.add({ x: x, y: z, z: ledHeight-y, style: 0xff0000 });
+                    dataExists = true
                 }
             }
         }
@@ -85,6 +86,7 @@ function getInitialData() {
 
 function ConvertToVisData(ledData){
     data = new vis.DataSet();
+    var dataExists = false
     for (var x = 0; x < 16; x++) {
         for (var y = 0; y < 32; y++) {
             for (var z = 0; z < 8; z++) {
@@ -96,6 +98,9 @@ function ConvertToVisData(ledData){
 
             }
         }
+    }
+    if(!dataExists){
+        data.add({x:0, y:0, z:0, style:"#00000000"})
     }
     return data
 }
